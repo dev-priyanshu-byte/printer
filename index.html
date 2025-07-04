@@ -118,7 +118,7 @@
     preview.innerText = bill;
 
     const encoded = encodeURIComponent(bill);
-    printBtn.href = `intent://print/?text=${encoded}#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end`;
+    printBtn.href = `intent:${encoded}#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end`;
   }
 </script>
 
