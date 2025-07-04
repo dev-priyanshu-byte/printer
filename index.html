@@ -44,6 +44,14 @@
       margin-top: 20px;
       border: 1px solid #ccc;
     }
+    @media print {
+      body *:not(.print-area):not(.print-area *) {
+        display: none;
+      }
+      .print-area {
+        display: block;
+      }
+    }
   </style>
 </head>
 <body>
@@ -66,62 +74,65 @@
     <tbody></tbody>
   </table>
 
-  <div id="billPreview"></div>
-  <a class="btn" id="printBtn" href="#">🖨️ Print via RawBT</a>
+  <button class="btn" onclick="printBill()">🖨️ Print Bill</button>
 
-<script>
-  const items = [];
-  const tableBody = document.querySelector("#itemsTable tbody");
-  const preview = document.getElementById("billPreview");
-  const printBtn = document.getElementById("printBtn");
+  <!-- Hidden Printable Area -->
+  <div id="printSection" class="print-area" style="display: none; font-family: monospace; padding: 10px;">
+    <pre id="printContent"></pre>
+  </div>
 
-  function addItem() {
-    const name = document.getElementById("itemName").value.trim();
-    const qty = parseInt(document.getElementById("itemQty").value.trim());
-    const price = parseFloat(document.getElementById("itemPrice").value.trim());
+  <script>
+    const items = [];
+    const tableBody = document.querySelector("#itemsTable tbody");
 
-    if (!name || isNaN(qty) || isNaN(price)) return alert("Enter valid item, qty & price");
+    function addItem() {
+      const name = document.getElementById("itemName").value.trim();
+      const qty = parseInt(document.getElementById("itemQty").value.trim());
+      const price = parseFloat(document.getElementById("itemPrice").value.trim());
 
-    items.push({ name, qty, price });
-    renderTable();
-    renderBill();
-  }
+      if (!name || isNaN(qty) || isNaN(price)) return alert("Enter valid item, qty & price");
 
-  function renderTable() {
-    tableBody.innerHTML = "";
-    items.forEach(item => {
-      const row = `<tr>
-        <td>${item.name}</td>
-        <td>${item.qty}</td>
-        <td>₹${item.price}</td>
-        <td>₹${item.qty * item.price}</td>
-      </tr>`;
-      tableBody.innerHTML += row;
-    });
-  }
+      items.push({ name, qty, price });
+      renderTable();
+    }
 
-  function renderBill() {
-    const shopName = document.getElementById("shopName").value || "My Shop";
-    let bill = `${shopName}\n----------------------------\n`;
-    bill += "Item       Qty  Price  Total\n";
+    function renderTable() {
+      tableBody.innerHTML = "";
+      items.forEach(item => {
+        const row = `<tr>
+          <td>${item.name}</td>
+          <td>${item.qty}</td>
+          <td>₹${item.price}</td>
+          <td>₹${item.qty * item.price}</td>
+        </tr>`;
+        tableBody.innerHTML += row;
+      });
+    }
 
-    let total = 0;
-    items.forEach(item => {
-      const line = `${item.name.padEnd(10)} ${item.qty.toString().padEnd(4)} ₹${item.price.toFixed(0).padEnd(6)} ₹${(item.qty * item.price).toFixed(0)}\n`;
-      bill += line;
-      total += item.qty * item.price;
-    });
+    function printBill() {
+      const shopName = document.getElementById("shopName").value || "My Shop";
+      let bill = `${shopName}\n----------------------------\n`;
+      bill += "Item       Qty  Price  Total\n";
 
-    bill += "----------------------------\n";
-    bill += `Total: ₹${total.toFixed(0)}\nThank you!\n`;
+      let total = 0;
+      items.forEach(item => {
+        const line = `${item.name.padEnd(10)} ${item.qty.toString().padEnd(4)} ₹${item.price.toFixed(0).padEnd(6)} ₹${(item.qty * item.price).toFixed(0)}\n`;
+        bill += line;
+        total += item.qty * item.price;
+      });
 
-    preview.innerText = bill;
+      bill += "----------------------------\n";
+      bill += `Total: ₹${total.toFixed(0)}\nThank you!\n`;
 
-    const encoded = encodeURIComponent(bill);
-    printBtn.href = `intent:${encoded}#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end`;
-  }
-</script>
+      // Inject into printable area
+      const printContent = document.getElementById("printContent");
+      printContent.innerText = bill;
 
+      document.getElementById("printSection").style.display = "block";
+      window.print();
+      document.getElementById("printSection").style.display = "none";
+    }
+  </script>
 
 </body>
 </html>
